@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msa-hw3-service
+spec:
+  selector:
+    app: msa-hw3
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: LoadBalancer #поменять на ClusterIP, если тестируется на minicube (я тестировался на wsl + DockerDesktop)

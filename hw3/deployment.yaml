@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msa-hw3
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: msa-hw3
+  template:
+    metadata:
+      labels:
+        app: msa-hw3
+    spec:
+      containers:
+      - name: msa-hw3
+        image: restwin/msa-hw2:v1.0
+        ports:
+        - containerPort: 8000
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
