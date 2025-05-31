@@ -1,0 +1,26 @@
+Приложение {{ include "msa-hw4.fullname" . }} установлено.
+
+Основные моменты:
+1. Неймспейс: {{ .Release.Namespace }}
+2. Имя релиза: {{ .Release.Name }}
+
+Чтобы получить доступ к приложению:
+{{- range .Values.ingress.hosts }}
+http://{{ .host }}{{ (first .paths).path }}
+{{- end }}
+Возможно, вам потребуется добавить запись в ваш /etc/hosts файл:
+127.0.0.1 arch.homework  (Если Ingress контроллер слушает на localhost)
+Или IP вашего Kubernetes узла (для Docker Desktop это может быть IP самого Docker Desktop)
+
+Проверьте статус подов:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Проверьте логи приложения:
+  kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "msa-hw4.name" . }} -c {{ .Chart.Name }}-app-container --follow
+
+PostgreSQL был установлен как зависимость. Имя сервиса: {{ .Release.Name }}-postgresql
+База данных: {{ .Values.postgresql.auth.database }}
+Пользователь: {{ .Values.postgresql.auth.username }}
+Пароль для пользователя был сохранен в секрете {{ .Release.Name }}-postgresql.
+
+Job миграций {{ if .Values.migrations.enabled }}был запущен{{ else }}отключен{{ end }}.

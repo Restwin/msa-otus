@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msa-hw4-app-service
+  namespace: msa-hw4-ns
+spec:
+  selector:
+    app: msa-hw4-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: LoadBalancer # при minicube поменять на ClusterIP

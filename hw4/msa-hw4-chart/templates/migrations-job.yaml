@@ -1,0 +1,54 @@
+{{- if .Values.migrations.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "msa-hw4.fullname" . }}-migrations
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "msa-hw4.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrations
+  annotations:
+  {{- with .Values.migrations.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "msa-hw4.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrations
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "msa-hw4.serviceAccountName" . }}
+      {{- end }}
+      containers:
+        - name: migration-container
+          image: "{{ .Values.migrations.image.repository }}:{{ .Values.migrations.image.tag }}"
+          imagePullPolicy: {{ .Values.migrations.image.pullPolicy }}
+          command: ["python", "-m", "app.migrate"]
+          env:
+            - name: APP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "msa-hw4.fullname" . }}-app-config
+                  key: APP_PORT
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "msa-hw4.fullname" . }}-app-config
+                  key: POSTGRES_HOST
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "msa-hw4.fullname" . }}-app-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.auth.username | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-%s" .Release.Name "postgresql" }}
+                  key: password
+  backoffLimit: {{ .Values.migrations.backoffLimit }}
+{{- end }}

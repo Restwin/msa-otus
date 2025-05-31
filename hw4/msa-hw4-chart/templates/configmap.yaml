@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "msa-hw4.fullname" . }}-app-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "msa-hw4.labels" . | nindent 4 }}
+data:
+  APP_PORT: {{ .Values.appConfig.APP_PORT | quote }}
+  POSTGRES_HOST: {{ printf "%s-%s" .Release.Name "postgresql" | quote }}
+  POSTGRES_DB: {{ .Values.postgresql.auth.database | quote }}

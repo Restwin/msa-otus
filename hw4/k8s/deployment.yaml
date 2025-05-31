@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: msa-hw4-app-deployment
+  namespace: msa-hw4-ns
+  labels:
+    app: msa-hw4-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: msa-hw4-app
+  template:
+    metadata:
+      labels:
+        app: msa-hw4-app
+    spec:
+      containers:
+      - name: msa-hw4-app-container
+        image: restwin/msa-hw4:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        envFrom:
+          - configMapRef:
+              name: msa-hw4-app-config
+          - secretRef:
+              name: msa-hw4-db-secret
+        env:
+          - name: POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: msa-hw4-app-config
+                key: POSTGRES_HOST
+          - name: POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                name: msa-hw4-app-config
+                key: POSTGRES_DB
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: msa-hw4-db-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: msa-hw4-db-secret
+                key: POSTGRES_PASSWORD
+          - name: APP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: msa-hw4-app-config
+                key: APP_PORT
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10

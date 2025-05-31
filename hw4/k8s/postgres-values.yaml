@@ -1,0 +1,20 @@
+global:
+  storageClass: ""
+
+auth:
+  username: "msa_hw4_user"
+  password: "msa_hw4_user123"
+  database: "msa_hw4_db"
+  enablePostgresUser: true
+
+primary:
+  persistence:
+    enabled: true
+    size: 1Gi
+
+readReplicas:
+  enabled: false
+
+service:
+  type: ClusterIP
+  

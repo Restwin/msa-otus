@@ -1,0 +1,83 @@
+# Глобальные значения для приложения msa-hw4
+replicaCount: 2
+
+image:
+  repository: restwin/msa-hw4
+  pullPolicy: Always
+  tag: "latest"
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  name: ""
+
+service:
+  type: LoadBalancer # В зависимости от зоны: LoadBalancer, NodePort, ClusterIP
+  port: 80
+  targetPort: 5000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+    # nginx.ingress.kubernetes.io/rewrite-target: / # Обычно не требуется, если path: / и приложение ожидает полный путь
+  hosts:
+    - host: arch.homework
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+appConfig:
+  APP_PORT: "5000"
+
+# Настройки для Job-ы миграций
+migrations:
+  enabled: true
+  image:
+    repository: restwin/msa-hw4
+    pullPolicy: Always
+    tag: "latest"
+  backoffLimit: 4
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+
+# Значения для зависимого чарта PostgreSQL
+postgresql:
+  enabled: true
+  global:
+    storageClass: ""
+  auth:
+    username: "msa_hw4_user"
+    password: "msa_hw4_user123"
+    database: "msa_hw4_db"
+    enablePostgresUser: true
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+    service:
+      type: LoadBalancer # В зависимости от зоны: LoadBalancer, NodePort, ClusterIP
+
+# Значения для зависимого чарта ingress-nginx
+ingress-nginx:
+  enabled: true
+  controller:
+    kind: DaemonSet
+    reportNodeInternalIp: true
+    hostPort:
+      enabled: true
+      ports:
+        http: 80
+        https: 443
+    service:
+      type: NodePort
+    admissionWebhooks:
+      patch:
+        nodeSelector:
+          kubernetes.io/os: linux
+    replicaCount: 1 ##

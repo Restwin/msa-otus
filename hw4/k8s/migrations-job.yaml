@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: msa-hw4-migrations
+  namespace: msa-hw4-ns
+spec:
+  template:
+    spec:
+      containers:
+      - name: migration-container
+        image: restwin/msa-hw4:latest
+        command: ["python", "-m", "app.migrate"]
+        envFrom:
+          - configMapRef:
+              name: msa-hw4-app-config
+          - secretRef:
+              name: msa-hw4-db-secret
+      restartPolicy: OnFailure
+  backoffLimit: 4
